@@ -1,0 +1,78 @@
+# ============================================================
+# Jenkins values.yaml — Mac M1 / Rancher Desktop
+# ============================================================
+
+controller:
+  admin:
+    username: "admin"
+    password: "admin"
+
+  image:
+    registry: "docker.io"
+    repository: "adillabiad/jenkins-docker"
+    tag: "lts"
+    pullPolicy: "IfNotPresent"
+
+  serviceType: NodePort
+  nodePort: 30080
+
+  agentListenerServiceType: "ClusterIP"
+  agentListenerPort: 50000
+
+  resources:
+    requests:
+      cpu: "250m"
+      memory: "512Mi"
+    limits:
+      cpu: "2000m"
+      memory: "1536Mi"
+
+  javaOpts: "-Xms256m -Xmx512m"
+  numExecutors: 2
+
+  # ── Désactiver les restrictions pour accéder au docker.sock ──
+  usePodSecurityContext: true
+  runAsUser: 0
+  fsGroup: 0
+  containerSecurityContext:
+    runAsUser: 0
+    runAsGroup: 0
+    readOnlyRootFilesystem: false
+    allowPrivilegeEscalation: true
+
+  # ── Démarrage lent — augmenter les seuils ────────────────
+  probes:
+    startupProbe:
+      failureThreshold: 60
+      periodSeconds: 10
+      timeoutSeconds: 10
+    livenessProbe:
+      failureThreshold: 10
+      periodSeconds: 10
+      timeoutSeconds: 10
+    readinessProbe:
+      failureThreshold: 10
+      periodSeconds: 10
+      timeoutSeconds: 10
+
+  installPlugins:
+    - kubernetes:4423.vb_59f230b_ce53
+    - workflow-aggregator:608.v67378e9d3db_1
+    - git:5.10.1
+    - configuration-as-code:2077.v41f1011a_5110
+
+persistence:
+  enabled: true
+  storageClass: "local-path"
+  size: "2Gi"
+
+  # ── Monter le socket Docker — syntaxe correcte du chart ──
+  volumes:
+    - name: docker-sock
+      hostPath:
+        path: /var/run/docker.sock
+        type: Socket
+
+  mounts:
+    - name: docker-sock
+      mountPath: /var/run/docker.sock
