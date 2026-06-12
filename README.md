@@ -159,12 +159,12 @@ controller:
       periodSeconds: 10
       timeoutSeconds: 10
 
-  # ── Plugins installés au démarrage ───────────────────────
-  installPlugins:
-    - kubernetes:4423.vb_59f230b_ce53
-    - workflow-aggregator:608.v67378e9d3db_1
-    - git:5.10.1
-    - configuration-as-code:2077.v41f1011a_5110
+  # ── Plugins ──────────────────────────────────────────────
+  # Les plugins sont préinstallés dans l'image (voir Dockerfile.jenkins).
+  # On désactive l'installation par le chart : son init container
+  # `yes n | cp -i` plante en CrashLoopBackOff quand l'EmptyDir
+  # /var/jenkins_plugins n'est pas vide (ex: après un redémarrage de la machine).
+  installPlugins: false
 
 persistence:
   enabled: true
